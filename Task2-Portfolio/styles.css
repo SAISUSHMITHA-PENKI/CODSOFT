@@ -42,7 +42,7 @@ body {
 
 .heading-medium {
   margin: 0;
-  color: #f3443a;
+  color: #f33aa0;
   text-align: right;
   margin-right: 1px;
   width: fit-content;
@@ -69,7 +69,7 @@ body {
 }
 
 button {
-  background-color: #f3443a;
+  background-color: #f33aa0;
   color: #f0f0f0;
   border: none;
   padding: 10px 30px;
@@ -81,8 +81,8 @@ button {
 
 button:hover {
   background-color: #f0f0f0;
-  color: #f3443a;
-  box-shadow: 0 0 15px #f3443a;
+  color: #f33aa0;
+  box-shadow: 0 0 15px #f33aa0;
 }
 
 .year-content {
@@ -130,7 +130,7 @@ button:hover {
 
 .arrow-right:hover,
 .arrow-left:hover {
-  color: #f3443a;
+  color: #f33aa0;
   transform: scale(1.3);
 }
 
@@ -475,7 +475,7 @@ header {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background: #f3443a;
+  background: #f33aa0;
 }
 
 .services-content .service .service-icon i {

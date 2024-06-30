@@ -8,7 +8,7 @@ let memory = null;
 
 buttons.forEach((button) => {
     button.addEventListener("click", () => {
-        const input = button.textContent;
+        const input = button.textContent.trim();
         handleInput(input);
     });
     button.addEventListener("focus", () => {
@@ -22,23 +22,6 @@ buttons.forEach((button) => {
 document.addEventListener("keydown", handleKeyboardInput);
 
 function handleInput(input) {
-    if (isOperator(input) || input === "(" || input === ")") {
-        if (
-            lastInputWasOperator &&
-            input !== "(" &&
-            input !== ")" &&
-            input !== "-"
-        ) {
-            expression = expression.slice(0, -1) + input;
-        } else {
-            expression += input;
-        }
-        decimalEntered = false;
-        lastInputWasOperator = true;
-    } else {
-        lastInputWasOperator = false;
-    }
-
     if (input === "AC") {
         clearDisplay();
         return;
@@ -64,33 +47,37 @@ function handleInput(input) {
         return;
     }
 
-    if (resultDisplayed || expression === "Error") {
-        if (!isOperator(input) && input !== "(" && input !== ")") {
-            expression = "";
-        }
+    if (resultDisplayed && !isOperator(input)) {
+        expression = "";
         resultDisplayed = false;
     }
 
-    if (!isNaN(parseInt(input)) || input === ".") {
-        if (input === "." && decimalEntered) {
-            return;
-        }
-
-        if (lastInputWasOperator) {
-            decimalEntered = false;
-        }
-
-        if (expression === "0" || expression === "Error") {
-            expression = input;
+    if (isOperator(input) || input === "(" || input === ")") {
+        if (lastInputWasOperator && isOperator(input) && input !== "-") {
+            expression = expression.slice(0, -1) + input;
         } else {
             expression += input;
         }
-        display.textContent = expression;
-
+        lastInputWasOperator = true;
+    } else {
+        if (input === "." && decimalEntered) {
+            return;
+        }
         if (input === ".") {
             decimalEntered = true;
         }
+        if (lastInputWasOperator) {
+            decimalEntered = false;
+        }
+        expression += input;
+        lastInputWasOperator = false;
     }
+
+    updateDisplay();
+}
+
+function updateDisplay() {
+    display.textContent = expression || "0";
 }
 
 function calculateResult() {
@@ -155,10 +142,7 @@ function infixToPostfix(tokens) {
         } else if (token === "(") {
             operatorStack.push(token);
         } else if (token === ")") {
-            while (
-                operatorStack.length > 0 &&
-                operatorStack[operatorStack.length - 1] !== "("
-            ) {
+            while (operatorStack.length > 0 && operatorStack[operatorStack.length - 1] !== "(") {
                 postfixTokens.push(operatorStack.pop());
             }
             if (operatorStack.length === 0) {
@@ -166,12 +150,7 @@ function infixToPostfix(tokens) {
             }
             operatorStack.pop();
         } else {
-            while (
-                operatorStack.length > 0 &&
-                operatorStack[operatorStack.length - 1] !== "(" &&
-                precedence[token] <=
-                precedence[operatorStack[operatorStack.length - 1]]
-            ) {
+            while (operatorStack.length > 0 && operatorStack[operatorStack.length - 1] !== "(" && precedence[token] <= precedence[operatorStack[operatorStack.length - 1]]) {
                 postfixTokens.push(operatorStack.pop());
             }
             operatorStack.push(token);
@@ -228,21 +207,6 @@ function evaluatePostfixExpression(tokens) {
         throw new Error("Invalid expression");
     }
     return stack[0];
-}
-
-function clearLastInput() {
-    const lastChar = expression.slice(-1);
-    if (lastChar === "." && !decimalEntered) {
-        return;
-    }
-
-    expression = expression.slice(0, -1);
-    if (expression === "") {
-        display.textContent = "0";
-    } else {
-        display.textContent = expression;
-    }
-    resultDisplayed = false;
 }
 
 function clearDisplay() {
@@ -332,12 +296,16 @@ function calculatePercentage() {
 }
 
 function formatNumber(number) {
-    if (
-        Math.abs(number) >= 1e9 ||
-        (Math.abs(number) < 1e-9 && number !== 0)
-    ) {
+    if (Math.abs(number) >= 1e9 || (Math.abs(number) < 1e-9 && number !== 0)) {
         return number.toExponential(9);
     } else {
         return number.toString();
+    }
+}
+
+function clearLastInput() {
+    if (expression.length > 0) {
+        expression = expression.slice(0, -1);
+        updateDisplay();
     }
 }
